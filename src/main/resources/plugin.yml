@@ -1,0 +1,34 @@
+name: ${name}
+version: ${version}
+main: ${mainClass}
+api-version: 1.13
+authors: [SecretX]
+
+commands:
+  gtblocks:
+    description: ${name}
+    usage: /<command> <subcommand> [parameters]
+    aliases: []
+
+permissions:
+
+  gtblocks.*:
+    description: Gives access to all ${name} commands. Default to players with op.
+    default: op
+    children:
+      gtblocks.commands.manage: true
+      gtblocks.commands.purge: true
+      gtblocks.block.break: true
+
+  gtblocks.commands.manage:
+    description: Allow player to manage assigned block commands.
+    default: false
+
+  gtblocks.commands.purge:
+    description: Allow player to purge from database all entries from worlds currently not loaded.
+    default: false
+
+  gtblocks.block.break:
+    description: Allow player to enable break mode, where they are able to break command blocks.
+    default: false
+
