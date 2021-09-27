@@ -1,10 +1,14 @@
 # User-specific stuff
 .idea/
 Server/logs
-Server/plugins
+Server/plugins/*
 Server/world
 Server/world_nether
 Server/world_the_end
+Server/.console_history
+Server/ops.json
+Server/usercache.json
+Server/version_history.json
 
 *.iml
 *.ipr
@@ -125,7 +129,6 @@ run/
 
 # Others
 *.sqlite
-Server/.console_history
-Server/ops.json
-Server/usercache.json
-Server/version_history.json
+
+!Server/paper-1.12.2-1618.jar
+!Server/plugins/.gitkeep
