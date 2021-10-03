@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.5.31"
     kotlin("kapt") version "1.5.31"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "com.github.secretx33"
@@ -45,11 +45,13 @@ tasks.jar { enabled = false }
 artifacts.archives(tasks.shadowJar)
 
 tasks.shadowJar {
+    mergeServiceFiles()
     archiveFileName.set(rootProject.name + ".jar")
+    outputs.upToDateWhen { false }
     val dependencyPackage = "${rootProject.group}.dependencies.${rootProject.name.toLowerCase()}"
-//    relocate("org.jetbrains.exposed", "${dependencyPackage}.exposed")
+    kotlinRelocate("org.jetbrains.exposed", "${dependencyPackage}.exposed")
 //    relocate("kotlin", "${dependencyPackage}.kotlin")
-    relocate("kotlinx", "${dependencyPackage}.kotlinx")
+    kotlinRelocate("kotlinx", "${dependencyPackage}.kotlinx")
     relocate("org.slf4j", "${dependencyPackage}.slf4j")
     relocate("com.zaxxer.hikari", "${dependencyPackage}.hikari")
     relocate("org.jetbrains.annotations", "${dependencyPackage}.jetbrains.annotations")
@@ -61,6 +63,9 @@ tasks.shadowJar {
     relocate("com.cryptomorin.xseries", "${dependencyPackage}.xseries")
     exclude("DebugProbesKt.bin")
     finalizedBy(tasks.getByName("copyJar"))
+    doLast {
+        KotlinRelocator.patchMetadata(this@shadowJar)
+    }
 }
 
 tasks.create("copyJar", Copy::class) {
