@@ -28,16 +28,21 @@ class KotlinRelocator(private val task: ShadowJar, private val delegate: SimpleR
         private val relocationPaths = mutableMapOf<String, String>()
 
         internal fun storeRelocationPath(pattern: String, destination: String) {
-            relocationPaths[pattern.replace('.', '/') + "/"] = destination.replace('.', '/') + "/"
+            val newPattern = pattern.replace('.', '/') + "/"
+            val intersections = relocationPaths.keys.filter { it.startsWith(newPattern) }
+            require(intersections.isEmpty()) {
+                "Can't relocate from $pattern to $destination as it clashes with another paths: ${intersections.joinToString()}"
+            }
+            relocationPaths[newPattern] = destination.replace('.', '/') + "/"
         }
         private fun patchFile(file: Path) {
             if(Files.isDirectory(file) || !file.toString().endsWith(".class")) return
             Files.newInputStream(file).use { ins ->
                 val cr = ClassReader(ins)
-                val cw = ClassWriter(cr, 0)
+                val cw = PatchedClassWriter(cr, 0, relocationPaths)
                 val scanner = AnnotationScanner(cw, relocationPaths)
                 cr.accept(scanner, 0)
-                if (scanner.wasPatched) {
+                if (scanner.wasPatched || cw.wasPatched) {
                     ins.close()
                     Files.delete(file)
                     Files.write(file, cw.toByteArray())

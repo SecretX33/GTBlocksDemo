@@ -1,17 +1,15 @@
 import org.objectweb.asm.*
 
-private val kotlinHiddenClasses = listOf<String>("kotlin.Any")
-
 class AnnotationScanner(val cw: ClassWriter, val patch: Map<String, String>) : ClassVisitor(Opcodes.ASM9, cw) {
-    val reverRelocation = patch.values.map { "$it/kotlin/Any" }.toSet()
     var wasPatched = false
     override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor? {
-
-        return MetadataVisitor(cw.visitAnnotation(descriptor, visible))
+        return if (descriptor == "Lkotlin/Metadata;")
+            MetadataVisitor(cw.visitAnnotation(descriptor, visible))
+        else
+            cw.visitAnnotation(descriptor, visible)
     }
 
-
-    inner class MetadataVisitor(val av: AnnotationVisitor, val thatArray: Boolean = false) : AnnotationVisitor(Opcodes.ASM9, av) {
+    inner class MetadataVisitor(av: AnnotationVisitor, val thatArray: Boolean = false) : AnnotationVisitor(Opcodes.ASM9, av) {
         override fun visit(name: String?, value: Any?) {
             val newValue = when {
                 thatArray && value is String && value.startsWith("(") -> {
@@ -34,18 +32,6 @@ class AnnotationScanner(val cw: ClassWriter, val patch: Map<String, String>) : C
             } else {
                 av.visitArray(name)
             }
-        }
-
-        override fun visitAnnotation(name: String?, descriptor: String?): AnnotationVisitor {
-            return av.visitAnnotation(name, descriptor)
-        }
-
-        override fun visitEnum(name: String?, descriptor: String?, value: String?) {
-            av.visitEnum(name, descriptor, value)
-        }
-
-        override fun visitEnd() {
-            av.visitEnd()
         }
     }
 }

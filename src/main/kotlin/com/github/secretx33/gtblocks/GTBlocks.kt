@@ -1,7 +1,9 @@
 package com.github.secretx33.gtblocks
 
 import com.github.secretx33.gtblocks.database.SQLite
+import com.github.secretx33.gtblocks.model.CommandBlock
 import me.mattstudios.msg.bukkit.BukkitMessage
+import org.bukkit.Material
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import toothpick.Scope
@@ -9,6 +11,7 @@ import toothpick.ktp.KTP
 import toothpick.ktp.binding.bind
 import toothpick.ktp.binding.module
 import toothpick.ktp.extension.getInstance
+import java.util.*
 
 class GTBlocks : JavaPlugin() {
 
@@ -27,7 +30,11 @@ class GTBlocks : JavaPlugin() {
         // NoClassDefFoundError
         val sqlite = scope.getInstance<SQLite>()
         // test if database is being queried correctly (if it doesn't throw anything)
-        sqlite.getAllCommandBlocks()
+        sqlite.insertCommandBlock(CommandBlock(UUID.randomUUID(), 0, 0, 0, Material.AIR))
+        sqlite.getAllCommandBlocks().forEach {
+            logger.info("Found block ${it.worldUuid}")
+        }
+        sqlite.insertCommandBlock(CommandBlock(UUID.randomUUID(), 0, 0, 0, Material.AIR))
     }
 
     // this method is called when the plugin is unloaded by the plugin loader
